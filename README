@@ -1,0 +1,145 @@
+storage_monitor README                                   D. Nygren   9 Sept 2019
+--------------------------------------------------------------------------------
+
+Read the comment header block of storage_monitor for information on this
+program.
+
+storage_monitor can be called on the command line, but is usually called
+periodically using cron. If more than just a warning message in the log is
+desired, a mail transfer agent (MTA) must be configured on the system running
+storage_monitor in order to receive a warning message emailed by cron.
+Often an MTA is already configured on a system. If not, below are some
+instructions on how to install and configure nullmailer, a simple mail transfer
+agent.
+
+=========================================
+Nullmailer Installation and Configuration
+=========================================
+
+nygren@nygren-linux-pc:~$ sudo apt install nullmailer
+
+---------------------------
+
+root@nygren-linux-pc:/etc/nullmailer# ls -la
+total 36
+drwxr-xr-x   2 root root  4096 Aug 26 13:44 .
+drwxr-xr-x 145 root root 12288 Aug 23 17:49 ..
+-rw-r--r--   1 root root    16 Aug 23 18:04 adminaddr
+-rw-r--r--   1 root root     9 Aug 23 17:49 defaultdomain
+-rw-r--r--   1 root root     9 Aug 26 12:47 defaulthost
+-rw-r--r--   1 mail mail    45 Aug 26 13:44 remotes
+root@nygren-linux-pc:/etc/nullmailer# cat *
+nygren@example.com
+example.com
+example.com
+example.com
+mail1.example.com
+
+---------------------------
+
+#!/bin/bash
+
+# START OF USER CHANGEABLE VARIABLES
+sender=nygren@example.com           ##### MUST BE YOUR EMAIL AT THE SMTP SERVER
+youremail=$sender                   ##### FEEL FREE TO MAKE IT SOMETHING ELSE
+                                    ##### IF YOU HAVE A SECOND EMAIL ADDRESS
+#friendemail=friend@friendsdomain.com
+friendemail=$sender
+
+yourname="Dan Nygren"
+friendname="Dan Nygren"
+# END OF USER CHANGEABLE VARIABLES
+
+
+emailfile=myemail.email
+dtime=`date`
+ltlt="<"
+gtgt=">"
+
+echo "Subject: Nullmailer test at $dtime" > $emailfile
+echo "From: $yourname  $ltlt$sender$gtgt" >> $emailfile
+echo "To: $yourname  $ltlt$youremail$gtgt" >> $emailfile
+echo "Cc: $friendname $ltlt$friendemail$gtgt" >> $emailfile
+echo "" >> $emailfile
+echo "Sent at $dtime" >> $emailfile
+echo "" >> $emailfile
+echo "$yourname was here" >> $emailfile
+echo "and now is gone" >> $emailfile
+echo "but left his name" >> $emailfile
+echo "to carry on." >> $emailfile
+echo "" >> $emailfile
+echo "This is a second paragraph that is kinda long, really really long, so
+ long that I truly hope that it does the right thing and wraps." >> $emailfile
+echo "" >> $emailfile
+echo "Sincerely" >> $emailfile
+echo "$yourname" >> $emailfile
+
+cat $emailfile | nullmailer-inject -h
+
+---------------------------
+
+$ nullmailer_test
+
+Return-Path: <nygren@example.com>
+Delivered-To: nygren@example.com
+Received: from nygren-linux-pc.example.com (unknown [10.100.93.213])
+    by mail1.example.com (Postfix) with SMTP id A506562591D;
+    Mon, 26 Aug 2019 14:28:24 -0700 (PDT)
+Received: (nullmailer pid 5961 invoked by uid 41523);
+    Mon, 26 Aug 2019 21:28:24 -0000
+Subject: Nullmailer test at Mon Aug 26 14:28:24 PDT 2019
+From: Dan Nygren <nygren@example.com>
+To: Dan Nygren <nygren@example.com>
+Cc: Dan Nygren <nygren@example.com>
+Date: Mon, 26 Aug 2019 14:28:24 -0700
+Message-Id: <1566854904.587998.5960.nullmailer@nygren-linux-pc.example.com>
+
+Sent at Mon Aug 26 14:28:24 PDT 2019
+
+Dan Nygren was here
+and now is gone
+but left his name
+to carry on.
+
+This is a second paragraph that is kinda long, really really long, so long
+ that I truly hope that it does the right thing and wraps.
+
+Sincerely
+Dan Nygren
+
+
+---------------------------
+
+nygren@nygren-linux-pc:~$ crontab -l
+53 * * * * /home/nygren/public_html/scripts/storage_monitor
+
+---------------------------
+
+nygren@nygren-linux-pc:~$ sudo service nullmailer restart
+
+
+Return-Path: <nygren@example.com>
+Delivered-To: nygren@example.com
+Received: from nygren-linux-pc.example.com (unknown [10.100.93.213])
+    by mail1.example.com (Postfix) with SMTP id B5CF1625370
+    for <nygren@example.com>; Mon, 26 Aug 2019 13:53:01 -0700 (PDT)
+Received: (nullmailer pid 2957 invoked by uid 41523);
+    Mon, 26 Aug 2019 20:53:01 -0000
+From: root@example.com (Cron Daemon)
+To: nygren@example.com
+Subject: Cron <nygren@nygren-linux-pc> /home/nygren/public_html/scripts/
+storage_monitor
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Cron-Env: <SHELL=/bin/sh>
+X-Cron-Env: <HOME=/home/nygren>
+X-Cron-Env: <PATH=/usr/bin:/bin>
+X-Cron-Env: <LOGNAME=nygren>
+Date: Mon, 26 Aug 2019 13:53:01 -0700
+Message-Id: <1566852781.667084.2956.nullmailer@nygren-linux-pc.example.com>
+
+Mon Aug 26 13:53:01 PDT 2019 nygren-linux-pc storage_monitor: WARNING usage of
+ partition "/" at 49%.
+
+---------------------------

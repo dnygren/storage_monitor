@@ -1,0 +1,97 @@
+#!/bin/bash
+################################################################################
+# storage_monitor : Monitor mass storage and report when over threshold
+#
+# BSD 0-clause license, "Zero Clause BSD", SPDX: 0BSD
+# Copyright (C) 2019 by Daniel C. Nygren <dan.nygren@alumni.clemson.edu>
+#
+# Original Concept: Vivek Gite 
+# https://www.cyberciti.biz/tips/shell-script-to-watch-the-disk-space.html
+# Current Implementation By: Dan Nygren
+# Email: dan.nygren@gmail.com
+# Permanent Email: Dan.Nygren@alumni.clemson.edu
+#
+#   A shell script to monitor the disk space. It will create a warning message
+# if the (free available) percentage of space is greater than or equal to the
+# ALERT_PERCENTAGE.
+#
+# CALLING SEQUENCE  storage_monitor
+#
+# EXAMPLES          storage_monitor
+# <time> <host> storage_monitor: WARNING usage of partition "/" at 80%.
+#
+# TARGET SYSTEM     Linux
+#
+# DEVELOPED USING   Linux
+#
+# CALLS             df, sed, grep, gawk, cut, date, basename, hostname, logger
+#
+# CALLED BY         Usually cron, but also can be called on the command line
+#
+# INPUTS            ALERT_PERCENTAGE, EXCLUDE_LIST
+#
+# OUTPUTS           Warning message to stdout (echo) and system log (logger)
+#                   if usage greater than or equal to ALERT_PERCENTAGE. If
+#                   called by cron, and a mail transfer agent (MTA) is present,
+#                   an email containing the warning message will be sent to a
+#                   recipient as configured in the MTA.
+#
+# RETURNS           Returns true if script completes
+#
+# ERROR HANDLING    No error handling
+#
+# WARNINGS          If run via cron, it is assumed only the logger output is
+#                   is desired. If stdout is also wanted, the user should
+#                   redirect it appropriately via a crontab entry.
+#                   (2. Describe anything a maintainer should be aware of)
+#                   (N. Describe anything a maintainer should be aware of)
+################################################################################
+
+#set -x # Uncomment this line to turn on xtrace for debugging
+
+# Set the percentage at and above which the operator will be alerted.
+ALERT_PERCENTAGE=80
+
+# Partition monitoring exclude list. If there is more than one partition,
+# use "|" to separate the partitions.
+EXCLUDE_LIST="udev|tmpfs|net|cdrom"
+#EXCLUDE_LIST="" # Don't exclude anything.
+
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ^^^^^^^^^^ Place code that may need modification above this point. ^^^^^^^^^^
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#--- Function(s) ---
+
+function process_df_lines() {
+while read output;
+do
+    #echo $output # Uncomment this line for additional debug output
+    used=$(echo $output | /usr/bin/gawk '{print $1}' | /usr/bin/cut -d'%' -f1)
+    partition=$(echo $output | /usr/bin/gawk '{print $2}')
+    if [ $used -ge $ALERT_PERCENTAGE ] ; then
+        date_string="$(/bin/date) "
+        usage_string="$(/usr/bin/basename $0): \
+WARNING usage of partition \"$partition\" at $used%."
+        host_string="$(/bin/hostname) "
+        echo $date_string$host_string$usage_string
+        # Log files already have time stamps and host names, so don't add these.
+        /usr/bin/logger $usage_string
+    fi
+done
+
+return
+}
+
+#--- Start Program ---
+
+# Run the df "disk free" program without line breaks (--portability).
+# Remove the first line containing field titles.
+# Remove excluded partitions.
+# Only print the "Use %" and "Mounted on" fields and process that output.
+/bin/df --portability | \
+/bin/sed '1d' | \
+/bin/grep --extended-regexp --invert-match "${EXCLUDE_LIST}" | \
+/usr/bin/gawk '{print $5 " " $6}' | process_df_lines
+
+exit 0  # Exit true (success) after the process_df_lines() function returns
