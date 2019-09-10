@@ -5,7 +5,7 @@
 # BSD 0-clause license, "Zero Clause BSD", SPDX: 0BSD
 # Copyright (C) 2019 by Daniel C. Nygren <dan.nygren@alumni.clemson.edu>
 #
-# Original Concept: Vivek Gite 
+# Original Concept: Vivek Gite
 # https://www.cyberciti.biz/tips/shell-script-to-watch-the-disk-space.html
 # Current Implementation By: Dan Nygren
 # Email: dan.nygren@gmail.com
@@ -24,7 +24,18 @@
 #
 # DEVELOPED USING   Linux
 #
-# CALLS             df, sed, grep, gawk, cut, date, basename, hostname, logger
+# CALLS             (Change these paths if necessary)
+
+AWK=/usr/bin/gawk
+CUT=/usr/bin/cut
+DATE=/bin/date
+BASENAME=/usr/bin/basename
+HOSTNAME=/bin/hostname
+LOGGER=/usr/bin/logger
+DF=/bin/df
+SED=/bin/sed
+GREP=/bin/grep
+
 #
 # CALLED BY         Usually cron, but also can be called on the command line
 #
@@ -67,16 +78,16 @@ function process_df_lines() {
 while read output;
 do
     #echo $output # Uncomment this line for additional debug output
-    used=$(echo $output | /usr/bin/gawk '{print $1}' | /usr/bin/cut -d'%' -f1)
-    partition=$(echo $output | /usr/bin/gawk '{print $2}')
+    used=$(echo $output | $AWK '{print $1}' | $CUT -d'%' -f1)
+    partition=$(echo $output | $AWK '{print $2}')
     if [ $used -ge $ALERT_PERCENTAGE ] ; then
-        date_string="$(/bin/date) "
-        usage_string="$(/usr/bin/basename $0): \
+        date_string="$($DATE) "
+        usage_string="$($BASENAME $0): \
 WARNING usage of partition \"$partition\" at $used%."
-        host_string="$(/bin/hostname) "
+        host_string="$($HOSTNAME) "
         echo $date_string$host_string$usage_string
         # Log files already have time stamps and host names, so don't add these.
-        /usr/bin/logger $usage_string
+        $LOGGER $usage_string
     fi
 done
 
@@ -89,9 +100,9 @@ return
 # Remove the first line containing field titles.
 # Remove excluded partitions.
 # Only print the "Use %" and "Mounted on" fields and process that output.
-/bin/df --portability | \
-/bin/sed '1d' | \
-/bin/grep --extended-regexp --invert-match "${EXCLUDE_LIST}" | \
-/usr/bin/gawk '{print $5 " " $6}' | process_df_lines
+$DF --portability | \
+$SED '1d' | \
+$GREP --extended-regexp --invert-match "${EXCLUDE_LIST}" | \
+$AWK '{print $5 " " $6}' | process_df_lines
 
 exit 0  # Exit true (success) after the process_df_lines() function returns

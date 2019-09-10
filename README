@@ -1,10 +1,10 @@
-storage_monitor README                                   D. Nygren   9 Sept 2019
+storage_monitor README                                   D. Nygren  10 Sept 2019
 --------------------------------------------------------------------------------
 
-Read the comment header block of storage_monitor for information on this
+    Read the comment header block of storage_monitor for information on this
 program.
 
-storage_monitor can be called on the command line, but is usually called
+    storage_monitor can be called on the command line, but is usually called
 periodically using cron. If more than just a warning message in the log is
 desired, a mail transfer agent (MTA) must be configured on the system running
 storage_monitor in order to receive a warning message emailed by cron.
@@ -15,6 +15,9 @@ agent.
 =========================================
 Nullmailer Installation and Configuration
 =========================================
+
+nullmailer is Copyright (C) 2018 Bruce Guenter, and may be copied according to
+the GNU GENERAL PUBLIC LICENSE (GPL) Version 2 or a later version.
 
 nygren@nygren-linux-pc:~$ sudo apt install nullmailer
 
@@ -38,6 +41,11 @@ mail1.example.com
 ---------------------------
 
 #!/bin/bash
+
+# This nullmailer_test script is based on the example from
+# http://troubleshooters.com/linux/nullmailer/
+# Copyright (C) 2007, 2011, 2013 by Steve Litt, All rights reserved.
+# Material provided as-is, use at your own risk.
 
 # START OF USER CHANGEABLE VARIABLES
 sender=nygren@example.com           ##### MUST BE YOUR EMAIL AT THE SMTP SERVER
