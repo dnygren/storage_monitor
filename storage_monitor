@@ -5,11 +5,11 @@
 # BSD 0-clause license, "Zero Clause BSD", SPDX: 0BSD
 # Copyright (C) 2019 by Daniel C. Nygren <dan.nygren@alumni.clemson.edu>
 #
-# Original Concept: Vivek Gite
-# https://www.cyberciti.biz/tips/shell-script-to-watch-the-disk-space.html
 # Current Implementation By: Dan Nygren
 # Email: dan.nygren@gmail.com
 # Permanent Email: Dan.Nygren@alumni.clemson.edu
+# Original Concept: Vivek Gite
+# https://www.cyberciti.biz/tips/shell-script-to-watch-the-disk-space.html
 #
 #   A shell script to monitor the disk space. It will create a warning message
 # if the (free available) percentage of space is greater than or equal to the
@@ -25,7 +25,6 @@
 # DEVELOPED USING   Linux
 #
 # CALLS             (Change these paths if necessary)
-
 AWK=/usr/bin/gawk
 CUT=/usr/bin/cut
 DATE=/bin/date
@@ -35,7 +34,6 @@ LOGGER=/usr/bin/logger
 DF=/bin/df
 SED=/bin/sed
 GREP=/bin/grep
-
 #
 # CALLED BY         Usually cron, but also can be called on the command line
 #
@@ -51,9 +49,9 @@ GREP=/bin/grep
 #
 # ERROR HANDLING    No error handling
 #
-# WARNINGS          If run via cron, it is assumed only the logger output is
-#                   is desired. If stdout is also wanted, the user should
-#                   redirect it appropriately via a crontab entry.
+# WARNINGS          If run via cron, only the logger output will be saved. If
+#                   stdout is also wanted, the user should configure an MTA or
+#                   redirect stdout appropriately via a crontab entry.
 #                   (2. Describe anything a maintainer should be aware of)
 #                   (N. Describe anything a maintainer should be aware of)
 ################################################################################

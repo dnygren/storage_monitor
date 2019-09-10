@@ -1,2 +1,2 @@
 # minute hour day-of-month month day-of-week command
-53 * * * * /home/nygren/public_html/scripts/storage_monitor
+53 * * * * /home/nygren/scripts/storage_monitor

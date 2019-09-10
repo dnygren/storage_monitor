@@ -1,8 +1,12 @@
 storage_monitor README                                   D. Nygren  10 Sept 2019
 --------------------------------------------------------------------------------
 
-    Read the comment header block of storage_monitor for information on this
-program.
+    Read the comment header block of the storage_monitor script file for
+detailed information on the operation of this program.
+
+=========================================
+storage_monitor and cron
+=========================================
 
     storage_monitor can be called on the command line, but is usually called
 periodically using cron. If more than just a warning message in the log is
@@ -119,7 +123,7 @@ Dan Nygren
 ---------------------------
 
 nygren@nygren-linux-pc:~$ crontab -l
-53 * * * * /home/nygren/public_html/scripts/storage_monitor
+53 * * * * /home/nygren/scripts/storage_monitor
 
 ---------------------------
 
