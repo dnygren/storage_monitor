@@ -11,15 +11,15 @@
 # Original Concept: Vivek Gite
 # https://www.cyberciti.biz/tips/shell-script-to-watch-the-disk-space.html
 #
-#   A shell script to monitor the disk space. It will create a warning message
-# if the (free available) percentage of space is greater than or equal to the
-# alert_percentage.
+#   A shell script to monitor the disk free space. It will create a warning
+# message if the (free available) percentage of space is greater than or equal
+# to the alert_percentage.
 #
-# CALLING SEQUENCE  storage_monitor
+# CALLING SEQUENCE  storage_monitor [-p alert_percentage]
 #
 # EXAMPLES          storage_monitor
 # <time> <host> storage_monitor: WARNING usage of partition "/opt/PRG" at 81%.
-
+#
 #                   storage_monitor -p 50
 # <time> <host> storage_monitor: WARNING usage of partition "/" at 52%.
 # <time> <host> storage_monitor: WARNING usage of partition "/opt/PRG" at 81%.
@@ -54,8 +54,9 @@ GREP=/bin/grep
 # ERROR HANDLING    No error handling
 #
 # WARNINGS          If run via cron, only the logger output will be saved. If
-#                   stdout is also wanted, the user should configure an MTA or
-#                   redirect stdout appropriately via a crontab entry.
+#                   stdout is also wanted, the user should configure an MTA
+#                   (to receive stdout via email) or redirect stdout
+#                   appropriately via the crontab entry.
 #                   (2. Describe anything a maintainer should be aware of)
 #                   (N. Describe anything a maintainer should be aware of)
 ################################################################################
