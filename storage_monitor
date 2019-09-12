@@ -13,12 +13,16 @@
 #
 #   A shell script to monitor the disk space. It will create a warning message
 # if the (free available) percentage of space is greater than or equal to the
-# ALERT_PERCENTAGE.
+# alert_percentage.
 #
 # CALLING SEQUENCE  storage_monitor
 #
 # EXAMPLES          storage_monitor
-# <time> <host> storage_monitor: WARNING usage of partition "/" at 80%.
+# <time> <host> storage_monitor: WARNING usage of partition "/opt/PRG" at 81%.
+
+#                   storage_monitor -p 50
+# <time> <host> storage_monitor: WARNING usage of partition "/" at 52%.
+# <time> <host> storage_monitor: WARNING usage of partition "/opt/PRG" at 81%.
 #
 # TARGET SYSTEM     Linux
 #
@@ -37,10 +41,10 @@ GREP=/bin/grep
 #
 # CALLED BY         Usually cron, but also can be called on the command line
 #
-# INPUTS            ALERT_PERCENTAGE, EXCLUDE_LIST
+# INPUTS            DEFAULT_PERCENTAGE, EXCLUDE_LIST, command line percentage
 #
 # OUTPUTS           Warning message to stdout (echo) and system log (logger)
-#                   if usage greater than or equal to ALERT_PERCENTAGE. If
+#                   if usage greater than or equal to alert_percentage. If
 #                   called by cron, and a mail transfer agent (MTA) is present,
 #                   an email containing the warning message will be sent to a
 #                   recipient as configured in the MTA.
@@ -58,8 +62,8 @@ GREP=/bin/grep
 
 #set -x # Uncomment this line to turn on xtrace for debugging
 
-# Set the percentage at and above which the operator will be alerted.
-ALERT_PERCENTAGE=80
+# Set the default percentage at and above which the operator will be alerted.
+DEFAULT_PERCENTAGE=80
 
 # Partition monitoring exclude list. If there is more than one partition,
 # use "|" to separate the partitions.
@@ -72,13 +76,40 @@ EXCLUDE_LIST="udev|tmpfs|net|cdrom"
 
 #--- Function(s) ---
 
+Help ()
+{
+    # The Help function requires exit_status be set before it is called.
+    # If for some reason exit_status is undefined, set it to a non-zero
+    # (failure) value.
+    if [[ -z exit_status ]]
+    then
+        exit_status=1
+    fi
+
+    # ">&2" Duplicates stdout error message to stderr. $(basename $0) is
+    # used so just the name (not including the path) of the command used to
+    # invoke this script is used. Thus you can rename this file and the
+    # correct command will be printed out without having to change the
+    # source code.
+
+    echo >&2 \
+"Usage: $(basename $0) checks if the (free available) percentage of space is
+greater than or equal to the alert_percentage.
+
+Examples:
+$ storage_monitor         (alert_percentage default is $DEFAULT_PERCENTAGE%)
+$ storage_monitor -p 50   (alert_percentage set to 50%)
+$ storage_monitor -h      (prints out this help message)"
+    exit $exit_status # Return with appropriate exit status.
+}
+
 function process_df_lines() {
 while read output;
 do
     #echo $output # Uncomment this line for additional debug output
     used=$(echo $output | $AWK '{print $1}' | $CUT -d'%' -f1)
     partition=$(echo $output | $AWK '{print $2}')
-    if [ $used -ge $ALERT_PERCENTAGE ] ; then
+    if [ $used -ge $alert_percentage ] ; then
         date_string="$($DATE) "
         usage_string="$($BASENAME $0): \
 WARNING usage of partition \"$partition\" at $used%."
@@ -93,6 +124,27 @@ return
 }
 
 #--- Start Program ---
+
+# Get any option parameters
+while getopts p: opt
+do
+    case "$opt" in
+     p ) alert_percentage="$OPTARG";;
+    \? ) exit_status=1
+         Help;;             # If an unknown flag is used, call Help() with a
+                            # non-zero (failure) exit status.
+    esac
+done
+
+# If the percentage was not set on the command line, use the default.
+if [ -z "$alert_percentage" ]
+    then
+    alert_percentage=$DEFAULT_PERCENTAGE
+    # Uncomment the below lines for debugging
+    # echo "Using default alert percentage of $DEFAULT_PERCENTAGE%."
+    # else
+    # echo "Using alert percentage of $alert_percentage%."
+fi
 
 # Run the df "disk free" program without line breaks (--portability).
 # Remove the first line containing field titles.
