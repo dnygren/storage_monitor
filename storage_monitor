@@ -1,6 +1,6 @@
 #!/bin/bash
 ################################################################################
-# storage_monitor : Monitor mass storage and report when over threshold
+# storage_monitor : Monitor mass storage and report when at or over threshold.
 #
 # BSD 0-clause license, "Zero Clause BSD", SPDX: 0BSD
 # Copyright (C) 2019 by Daniel C. Nygren <dan.nygren@alumni.clemson.edu>
@@ -11,18 +11,18 @@
 # Original Concept: Vivek Gite
 # https://www.cyberciti.biz/tips/shell-script-to-watch-the-disk-space.html
 #
-#   A shell script to monitor the disk free space. It will create a warning
-# message if the (free available) percentage of space is greater than or equal
-# to the alert_percentage.
+#   A shell script to monitor the disk free space. It will write a warning
+# message to the system log and stdout if the free/available percentage of
+# space is greater than or equal to the alert_percentage.
 #
 # CALLING SEQUENCE  storage_monitor [-p alert_percentage]
 #
 # EXAMPLES          storage_monitor
-# <time> <host> storage_monitor: WARNING usage of partition "/opt/PRG" at 81%.
+# <time> <host> storage_monitor: WARNING usage of partition "/opt/PRG" at 80%.
 #
 #                   storage_monitor -p 50
 # <time> <host> storage_monitor: WARNING usage of partition "/" at 52%.
-# <time> <host> storage_monitor: WARNING usage of partition "/opt/PRG" at 81%.
+# <time> <host> storage_monitor: WARNING usage of partition "/opt/PRG" at 80%.
 #
 # TARGET SYSTEM     Linux
 #
@@ -94,8 +94,9 @@ Help ()
     # source code.
 
     echo >&2 \
-"Usage: $(basename $0) checks if the (free available) percentage of space is
-greater than or equal to the alert_percentage.
+"Usage: $(basename $0) checks if the free/available percentage of space is
+greater than or equal to the alert_percentage, and if so, writes a message to
+the system log and standard output.
 
 Examples:
 $ storage_monitor         (alert_percentage default is $DEFAULT_PERCENTAGE%)
