@@ -100,7 +100,7 @@ greater than or equal to the alert_percentage.
 Examples:
 $ storage_monitor         (alert_percentage default is $DEFAULT_PERCENTAGE%)
 $ storage_monitor -p 50   (alert_percentage set to 50%)
-$ storage_monitor -h      (prints out this help message)"
+$ storage_monitor -h      (print out this help message)"
     exit $exit_status # Return with appropriate exit status.
 }
 
@@ -127,10 +127,12 @@ return
 #--- Start Program ---
 
 # Get any option parameters
-while getopts p: opt
+while getopts hp: opt
 do
     case "$opt" in
-     p ) alert_percentage="$OPTARG";;
+     p ) alert_percentage="$OPTARG";;   # Set alert_percentage from -p option.
+     h ) exit_status=0
+         Help;;             # Call Help() with a zero (success) exit status.
     \? ) exit_status=1
          Help;;             # If an unknown flag is used, call Help() with a
                             # non-zero (failure) exit status.
