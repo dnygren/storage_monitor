@@ -13,9 +13,9 @@
 #
 #   A shell script to monitor the disk free space. It will write a warning
 # message to the system log and stdout if the free/available percentage of
-# space is greater than or equal to the alert_percentage.
+# space on a filesystem is greater than or equal to the alert_percentage.
 #
-# CALLING SEQUENCE  storage_monitor [-p alert_percentage]
+# CALLING SEQUENCE  storage_monitor [-p alert_percentage] [-x exclude_list]
 #
 # EXAMPLES          storage_monitor
 # <time> <host> storage_monitor: WARNING usage of partition "/opt/PRG" at 80%.
@@ -23,6 +23,9 @@
 #                   storage_monitor -p 50
 # <time> <host> storage_monitor: WARNING usage of partition "/" at 52%.
 # <time> <host> storage_monitor: WARNING usage of partition "/opt/PRG" at 80%.
+#
+#                   storage_monitor -x "opt|something_else" -p 50
+# <time> <host> storage_monitor: WARNING usage of partition "/" at 52%.
 #
 # TARGET SYSTEM     Linux
 #
@@ -41,7 +44,8 @@ GREP=/bin/grep
 #
 # CALLED BY         Usually cron, but also can be called on the command line
 #
-# INPUTS            DEFAULT_PERCENTAGE, EXCLUDE_LIST, command line percentage
+# INPUTS            DEFAULT_PERCENTAGE, command line percentage,
+#                   DEFAULT_EXCLUDE_LIST, command line exclude list
 #
 # OUTPUTS           Warning message to stdout (echo) and system log (logger)
 #                   if usage greater than or equal to alert_percentage. If
@@ -68,8 +72,8 @@ DEFAULT_PERCENTAGE=80
 
 # Partition monitoring exclude list. If there is more than one partition,
 # use "|" to separate the partitions.
-EXCLUDE_LIST="udev|tmpfs|net|cdrom"
-#EXCLUDE_LIST="" # Don't exclude anything.
+DEFAULT_EXCLUDE_LIST="udev|tmpfs|net|cdrom"
+#DEFAULT_EXCLUDE_LIST="" # Don't exclude anything.
 
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # ^^^^^^^^^^ Place code that may need modification above this point. ^^^^^^^^^^
@@ -96,11 +100,17 @@ Help ()
     echo >&2 \
 "Usage: $(basename $0) checks if the free/available percentage of space is
 greater than or equal to the alert_percentage, and if so, writes a message to
-the system log and standard output.
+the system log and standard output. Filesystems containing \
+$DEFAULT_EXCLUDE_LIST
+are by default excluded from the check, but this list can be overridden on
+the command line.
 
 Examples:
 $ storage_monitor         (alert_percentage default is $DEFAULT_PERCENTAGE%)
 $ storage_monitor -p 50   (alert_percentage set to 50%)
+$ storage_monitor -x \"udev|tmpfs|net|cdrom\" (exclude monitoring these \
+filesystems)
+$ storage_monitor -x \"\"   (monitor all filesystems by excludng nothing)
 $ storage_monitor -h      (print out this help message)"
     exit $exit_status # Return with appropriate exit status.
 }
@@ -128,10 +138,12 @@ return
 #--- Start Program ---
 
 # Get any option parameters
-while getopts hp: opt
+while getopts hp:x: opt
 do
     case "$opt" in
      p ) alert_percentage="$OPTARG";;   # Set alert_percentage from -p option.
+     x ) exclude_list="$OPTARG"         # Set exclude_list from -x option.
+         exclude_command_line_flag=1;;
      h ) exit_status=0
          Help;;             # Call Help() with a zero (success) exit status.
     \? ) exit_status=1
@@ -147,7 +159,28 @@ if [ -z "$alert_percentage" ]
     # Uncomment the below lines for debugging
     # echo "Using default alert percentage of $DEFAULT_PERCENTAGE%."
     # else
-    # echo "Using alert percentage of $alert_percentage%."
+    # echo "Using command line alert percentage of $alert_percentage%."
+fi
+
+# If the exclude list was set on the command line, and if it was set to "",
+# change the null exclude list to something unmatchable because
+# grep --invert-match "" doesn't return anything when told to invert match
+# nothing.
+if [[ $exclude_command_line_flag -eq 1 ]]
+    then
+    if [ -z "$exclude_list" ]
+        then
+        # Uncomment the below line for debugging
+        #echo "Excluding nothing"
+        exclude_list="grep_invert_match_does_not_work_so_make_ridiculous_match"
+    fi
+    # Uncomment the below line for debugging
+    #echo "Using command line exclude list of $exclude_list."
+# Else use the default exclude list.
+    else
+    exclude_list=$DEFAULT_EXCLUDE_LIST
+    # Uncomment the below line for debugging
+    #echo "Using default exclude list of $DEFAULT_EXCLUDE_LIST."
 fi
 
 # Run the df "disk free" program without line breaks (--portability).
@@ -156,7 +189,7 @@ fi
 # Only print the "Use %" and "Mounted on" fields and process that output.
 $DF --portability | \
 $SED '1d' | \
-$GREP --extended-regexp --invert-match "${EXCLUDE_LIST}" | \
+$GREP --extended-regexp --invert-match "${exclude_list}" | \
 $AWK '{print $5 " " $6}' | process_df_lines
 
 exit 0  # Exit true (success) after the process_df_lines() function returns
