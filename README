@@ -1,20 +1,22 @@
-storage_monitor README                                   D. Nygren  10 Sept 2019
+storage_monitor README                                   D. Nygren  16 Sept 2019
 --------------------------------------------------------------------------------
 
-    Read the comment header block of the storage_monitor script file for
-detailed information on the operation of this program.
+    Read the comment header block in the source code of the storage_monitor
+script file for detailed information on the operation of this program.
 
 =========================================
 storage_monitor and cron
 =========================================
 
     storage_monitor can be called on the command line, but is usually called
-periodically using cron. If more than just a warning message in the log is
-desired, a mail transfer agent (MTA) must be configured on the system running
-storage_monitor in order to receive a warning message emailed by cron.
-Often an MTA is already configured on a system. If not, below are some
-instructions on how to install and configure nullmailer, a simple mail transfer
-agent.
+periodically using cron. An example crontab entry for storage monitor is
+provided in the file named "crontab".
+
+    If more than just a warning message in the log is desired, a mail transfer
+agent (MTA) must be configured on the system running storage_monitor in order to
+receive a warning message emailed by cron.  Often an MTA is already configured
+on a system. If not, below are some instructions on how to install and configure
+nullmailer, a simple mail transfer agent.
 
 =========================================
 Nullmailer Installation and Configuration
@@ -152,6 +154,6 @@ Date: Mon, 26 Aug 2019 13:53:01 -0700
 Message-Id: <1566852781.667084.2956.nullmailer@nygren-linux-pc.example.com>
 
 Mon Aug 26 13:53:01 PDT 2019 nygren-linux-pc storage_monitor: WARNING usage of
- partition "/" at 49%.
+ partition "/" at 80%.
 
 ---------------------------

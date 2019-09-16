@@ -1,2 +1,25 @@
-# minute hour day-of-month month day-of-week command
-53 * * * * /home/nygren/scripts/storage_monitor
+# A crontab entry for storage_monitor.
+# Use the command "crontab -e" to edit a user's crontab file.
+# Use the command "crontab -l" to list a user's crontab file.
+#
+# Comments are not allowed on the same line as cron commands or environment
+# settings.
+#
+# A "*" in a field means "any" or "don't care".
+# Each field can contain a hyphen or commas to specify a range.
+# Examples                     1-5 Weekdays
+#                              0,6 Weekends
+#
+# At the 53 minute mark of every hour and every day, run storage_monitor.
+  53   *    *    *    *    /home/nygren/scripts/storage_monitor
+# ^    ^    ^    ^    ^    ^
+# |    |    |    |    |    |
+# |    |    |    |    |    |
+# |    |    |    |    |    |
+# |    |    |    |    |    |
+# |    |    |    |    |    +------  Command
+# |    |    |    |    +-------------  Day of week (0->6, 0=Sunday)
+# |    |    |    +---------------------  Month (1->12)
+# |    |    +-----------------------------  Day of Month (1->31)
+# |    +-------------------------------------  Hour (0->23)
+# +---------------------------------------------  Minute (0->59)
