@@ -12,6 +12,8 @@
 #
 # At the 53 minute mark of every hour and every day, run storage_monitor.
   53   *    *    *    *    /home/nygren/scripts/storage_monitor
+# Every Monday morning at 7:31 AM, send an email out to test nullmailer.
+  31   7    *    *    1    /bin/echo "Weekly check that nullmailer is working"
 # ^    ^    ^    ^    ^    ^
 # |    |    |    |    |    |
 # |    |    |    |    |    |
