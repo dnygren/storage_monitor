@@ -3,11 +3,10 @@
 # storage_monitor : Monitor mass storage and report when at or over threshold.
 #
 # BSD 0-clause license, "Zero Clause BSD", SPDX: 0BSD
-# Copyright (c) 2019, Daniel C. Nygren. <Dan.Nygren@alumni.clemson.edu>
+# Copyright (c) 2019, Daniel C. Nygren. <dan.nygren@gmail.com>
 #
 # Current Implementation By: Dan Nygren
 # Email: dan.nygren@gmail.com
-# Permanent Email: Dan.Nygren@alumni.clemson.edu
 # Original Concept: Vivek Gite
 # https://www.cyberciti.biz/tips/shell-script-to-watch-the-disk-space.html
 #
