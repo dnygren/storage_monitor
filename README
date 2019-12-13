@@ -1,22 +1,168 @@
-storage_monitor README                                   D. Nygren  16 Sept 2019
+storage_monitor README                                   D. Nygren  12 Dec 2019
 --------------------------------------------------------------------------------
 
     Read the comment header block in the source code of the storage_monitor
-script file for detailed information on the operation of this program.
-
-=========================================
-storage_monitor and cron
-=========================================
+script file for detailed information on its operation.
 
     storage_monitor can be called on the command line, but is usually called
-periodically using cron. An example crontab entry for storage monitor is
-provided in the file named "crontab".
+periodically using a systemd timer or cron. The storage_monitor_dist.tar.xz
+distribution file is only needed for systemd installations.
 
-    If more than just a warning message in the log is desired, a mail transfer
-agent (MTA) must be configured on the system running storage_monitor in order to
-receive a warning message emailed by cron.  Often an MTA is already configured
-on a system. If not, below are some instructions on how to install and configure
-nullmailer, a simple mail transfer agent.
+Building storage_monitor
+
+- These steps are only necessary if you do not already have a
+storage_monitor_dist.tar.xz distribution file or have made changes to
+storage_monitor and thus need to generate a new distribution file for systemd
+installations.
+- Execute `make clean` to remove any existing distribution files.
+$ make clean
+- Execute `make dist` to create a storage_monitor_dist.tar.xz distribution
+file to be installed on a target.
+$ make dist
+- After successfully building storage_monitor, see the instructions titled
+**Installing storage_monitor for systemd**.
+
+storage_monitor and systemd timers
+
+- storage_monitor is distributed to targets via a compressed "dist" distribution
+file.
+- If you have access to a storage_monitor_dist.tar.xz file, start with the
+**Installing storage_monitor** instructions.
+- If you are a software developer and have made changes to the storage_monitor
+source code, or do not have a dist file, follow the **Building storage_monitor
+for systemd** instructions.
+
+Installing storage_monitor for systemd
+
+- storage_monitor is installed on a spacecraft computer referred to as the
+target.
+- Copy the xz compressed storage_monitor_dist.tar.xz dist file containing
+storage_monitor into the target system.
+- How the distribution file is copied onto the target is out of the scope of
+this document but is typically done by:
+ -- Downloading the dist file from a git repository to a directory on a local
+computer,
+ -- Navigating to the directory on the local computer where the dist file was
+downloaded to (typically "Downloads"),
+$ cd Downloads
+$ ls -l storage_monitor_dist.tar.xz
+-rw------- 1 nygren uucp 7416 Dec 11 10:47 storage_monitor_dist.tar.xz
+ -- Ensure the dist file time/date indicate it is the one just
+requested to be downloaded.
+ -- Using the `scp` secure copy command (example below), transfer it from
+the local computer to the home directory of the login on the target.
+ -- $ scp storage_monitor_dist.tar.xz root@target-name:~
+ -- The tilde ~ specifies to transfer the file to the home directory of the
+login "root" which is usually /root. Other login's home directories may be
+/home/login etc.
+- Perform the installation of storage_monitor logged in on the target as the
+superuser which has the login name of "root".
+ -- How to login to a target is out of the scope of this document but is
+typically done in a lab using the `ssh` secure shell command, an example of
+which is below.
+ -- $ ssh -l login-name target-name
+ -- Note that the login-name you are provided may not be "root". Often remote
+superuser access is not provided for security reasons.
+ -- If the login-name is not root, obtain superuser permissions by executing
+a bash shell using the superuser do sudo command:
+$ sudo bash
+# <--- Pound sign prompt indicates user logged in as root.
+ -- Notice that the prompt will change in some manner to indicate root access.
+ -- In the sections to follow, the root prompt will be changed to the distinct
+### ROOT PRIVILEGES ### to definitively show that the user is logged in
+as root.
+ -- Recopy the xz compressed storage_monitor_dist.tar.xz distribution file
+containing storage_monitor into an **empty** directory on the target system and
+execute the tar command to uncompress and extract the distribution tar file
+contents.
+ -- The example below uses a directory under /tmp which will disappear after the
+next power cycle or reboot.  This will not affect the operation of
+storage_monitor as the distribution tar file contents will be installed into a
+different directory.
+
+### ROOT PRIVILEGES ### mkdir /tmp/storage_monitor
+### ROOT PRIVILEGES ### cp storage_monitor_dist.tar.xz /tmp/storage_monitor
+### ROOT PRIVILEGES ### cd /tmp/storage_monitor
+### ROOT PRIVILEGES ### tar --xz -xvf storage_monitor_dist.tar.xz
+GNUmakefile
+README
+storage_monitor
+storage_monitor.service
+storage_monitor.timer
+
+### ROOT PRIVILEGES ### ls -la /tmp/storage_monitor
+total 56
+drwxr-xr-x  2 root  root  4096 Dec 11 17:33 .
+drwxrwxrwt 11 root  root  4096 Dec 11 17:35 ..
+-rw-------  1 41523 uucp  6512 Dec 11 17:33 GNUmakefile
+-rw-------  1 41523 uucp 11129 Dec 11 16:05 README
+-rwx------  1 41523 uucp  7886 Dec 11 17:14 storage_monitor
+-rw-------  1 root  root  9304 Dec 11 17:30 storage_monitor_dist.tar.xz
+-rw-------  1 41523 uucp  3504 Dec 11 17:29 storage_monitor.service
+-rw-------  1 41523 uucp  2515 Dec 11 16:39 storage_monitor.timer
+
+
+- To ensure a previous version of storage_monitor is not present or running on
+the target via systemd, execute make uninstall to stop the storage_monitor
+systemd service (if running) and remove any existing storage_monitor software.
+
+### ROOT PRIVILEGES ### make uninstall
+
+- When running `make uninstall` failed and error conditions are displayed:
+
+GNUmakefile:172: recipe for target 'uninstall' failed
+make: [uninstall] Error 5 (ignored)
+
+- Conditions shown as `(ignored)` are of no consequence as this refers to a
+feature that was attempted to be uninstalled that never was installed in the
+first place.
+- Execute `make install` to copy the storage_monitor software to where it will
+reside for use on the target system.
+
+### ROOT PRIVILEGES ### make install
+
+Running storage_monitor
+
+storage_monitor can be executed from the command line, systemd, or cron.
+
+- Command line execution
+ --  This is commonly done when debugging the target system.
+
+### ROOT PRIVILEGES ### /opt/storage_monitor/storage_monitor
+
+The above will execute storage_monitor, printng output to the terminal, which is
+useful in debugging the operation of the system.
+
+- systemd execution
+
+ --  This is the method of automatically starting storage_monitor at certain
+times.
+
+### ROOT PRIVILEGES ### make systemd
+.
+.
+.
+*** The systemd storage_monitor.service is invoked by a systemd timer. ***
+*** Therefore storage_monitor.service has no [Install] section. ***
+
+
+storage_monitor and cron
+
+- An example crontab entry for storage monitor is provided in the file named
+"crontab_example".
+- Edit the crontab of the target system you want to have invoke storage_monitor
+periodically and add an entry for storage_monitor per the file crontab_example.
+- Usually the installation of storage_monitor is performed when logged in on
+the target as the superuser which has the login name of "root".
+
+### ROOT PRIVILEGES ### crontab -e
+
+- Using storage_monitor with cron makes it easier to have warning messages
+emailed to a user. If more than just a warning message in the log is desired, a
+mail transfer agent (MTA) must be configured on the system running
+storage_monitor in order to receive a warning message emailed by cron.  Often an
+MTA is already configured on a system. If not, below are some instructions on
+how to install and configure nullmailer, a simple mail transfer agent.
 
 =========================================
 Nullmailer Installation and Configuration

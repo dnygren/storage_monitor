@@ -1,0 +1,69 @@
+###############################################################################
+# storage_monitor.timer : A systemd unit timer file for storage_monitor.
+#
+# Created by: Dan Nygren
+# Email: dan.nygren@gmail.com
+#
+#    A unit file whose name ends in .timer controls a matching systemd .service
+# file.
+#
+# CALLING SEQUENCE      Called when this file is placed in /etc/systemd/system
+#                       and enabled with systemctl as shown below. This creates
+#                       a symbolic link between this .service file in
+#                       /etc/systemd/system/ and
+#                       /etc/systemd/system/multi-user.target.wants/
+#
+# EXAMPLES              systemctl enable storage_monitor (only required once)
+#
+#                       The following examples are for debug purposes
+#                       ---------------------------------------------
+#                       systemctl list-timers (View all started timers)
+#                       systemctl list-timers --all (View all timers)
+#                       systemctl status storage_monitor
+#                       (Buggy systemd journal query. See systemd issue 2913.)
+#                       systemctl --full status storage_monitor
+#                       (Buggy systemd journal query. See systemd issue 2913.)
+#                       systemctl enable storage_monitor.timer
+#                       systemctl start storage_monitor.timer
+#                       systemctl stop storage_monitor.timer
+#                       systemctl restart storage_monitor.timer
+#                       systemctl disable storage_monitor.timer
+#                       journalctl --no-pager | grep storage_monitor | tail
+#                       (systemd journal query)
+#                       journalctl --unit=storage_monitor
+#                       (Buggy systemd journal query. See systemd issue 2913.)
+#
+# TARGET SYSTEM         MMO flight computer
+#
+# DEVELOPMENT SYSTEM    Raspberry Pi
+#
+# CALLS                 storage_monitor.service
+#
+# CALLED BY             systemd
+#
+# INPUTS                The time to run the storage_monitor.service
+#
+# OUTPUTS               N/A
+#
+# RETURNS               N/A
+#
+# ERROR HANDLING        Per systemd
+#
+# WARNINGS              1) systemd commands sometimes omit storage_monitor
+#                       output. See systemd issue 2913.
+#                       https://github.com/systemd/systemd/issues/2913
+#                       (2. Describe anything a maintainer should be aware of)
+#                       (N. Describe anything a maintainer should be aware of)
+#
+###############################################################################
+
+[Unit]
+Description=Run storage_monitor hourly
+
+[Timer]
+# OnCalendar=DayOfWeek Year-Month-Day Hour:Minute:Second
+# Where "DayOfWeek" is optional is you want to run every day.
+OnCalendar=*-*-* *:53:00
+
+[Install]
+WantedBy=timers.target

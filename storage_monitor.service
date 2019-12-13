@@ -1,0 +1,99 @@
+###############################################################################
+# storage_monitor.service : A systemd service unit configuration file for
+#                           storage_monitor that works with a corresponding
+#                           unit timer file.
+#
+# Created by: Dan Nygren
+# Email: dan.nygren@gmail.com
+#
+#    A unit configuration file whose name ends in .service encodes information
+# about a process controlled and supervised by systemd.
+#
+# CALLING SEQUENCE      Called when this file is placed in /etc/systemd/system
+#                       and enabled with systemctl as shown below. This creates
+#                       a symbolic link between this .service file in
+#                       /etc/systemd/system/ and
+#                       /etc/systemd/system/multi-user.target.wants/
+#
+# EXAMPLES              systemctl enable storage_monitor (only required once)
+#
+#                       The following examples are for debug purposes
+#                       ---------------------------------------------
+#                       systemctl status storage_monitor
+#                       (Buggy systemd journal query. See systemd issue 2913.)
+#                       systemctl --full status storage_monitor
+#                       (Buggy systemd journal query. See systemd issue 2913.)
+#                       systemctl enable storage_monitor.service
+#                       systemctl stop storage_monitor.service
+#                       systemctl start storage_monitor.service
+#                       (Manually run service w/o the timer)
+#                       systemctl restart storage_monitor.service
+#                       (Manually run service w/o the timer)
+#                       journalctl --no-pager | grep storage_monitor | tail
+#                       (systemd journal query)
+#                       journalctl --unit=storage_monitor
+#                       (Buggy systemd journal query. See systemd issue 2913.)
+#
+# TARGET SYSTEM         MMO flight computer
+#
+# DEVELOPMENT SYSTEM    Raspberry Pi
+#
+# CALLS                 storage_monitor
+#
+# CALLED BY             systemd timer storage_monitor.timer
+#
+# INPUTS                User, Location of storage_monitor
+#
+# OUTPUTS               N/A
+#
+# RETURNS               N/A
+#
+# ERROR HANDLING        Per systemd
+#
+# WARNINGS              1. Note that the first argument of ExecStart
+#                       (i.e. the program to execute) may not be a variable.
+#                       Therefore don't bother setting up something like
+#                       Environment="AGENT_PATH=/opt/storage_monitor"
+#                       2. The "User" name must match the GNUmakefile "LOGIN"
+#                       or an error similar to the below will occur:
+#                       "Main process exited, code=exited, status=217/USER"
+#                       3. systemd commands sometimes omit storage_monitor
+#                       output. See systemd issue 2913.
+#                       https://github.com/systemd/systemd/issues/2913
+#                       (N. Describe anything a maintainer should be aware of)
+#
+###############################################################################
+
+[Unit]
+Description=Mass Storage Capacity Monitor
+
+[Service]
+# systemd considers a simple service to be started immediately.
+Type=simple
+# A login of "pi" is required.
+User=pi
+
+# You must manually set executable paths to storage_monitor
+#ExecStart=/opt/storage_monitor/storage_monitor -q
+# -q "quiet" option prevents storage monitor from printing date and hostname
+# information which is redundant with the systemd journal entries.
+ExecStart=/opt/storage_monitor/storage_monitor -q -p 10
+# -p 10 sets the alert percentage to 10%
+
+###
+# The (optional) command needed to stop the service.
+# ExecStop=
+# If this option is not specified, the process is terminated by sending
+# the signal specified in KillSignal= when service stop is requested.
+#
+# Defaults are:
+# KillMode=control-group # Also kill storage_monitor's children
+# KillSignal=SIGTERM
+# SendSIGHUP=no
+# If SIGTERM doesn't kill all the processes, the default is to send a SIGKILL
+# after ~90 seconds.
+# SendSIGKILL=yes
+# TimeoutStopSec=90
+
+# [Install]
+# An [Install] is not required as the .timer unit is enabled.
